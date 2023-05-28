@@ -1,0 +1,9 @@
+detector_matrices/
+gbm_models/
+*.txt
+*.fits
+.DS_Store
+__pycache__/*
+
+# jetbrains IDE stuff
+.idea
