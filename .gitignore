@@ -1,6 +1,7 @@
 detector_matrices/
 gbm_models/
 TTE/
+ttedata/
 *.txt
 *.fits
 .DS_Store

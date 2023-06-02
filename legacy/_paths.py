@@ -11,7 +11,7 @@ def filepath_gbm(grb_id):
 
 
 def filepath_database():
-    return os.path.join(os.path.dirname(__file__), '../GBMdatabase.db')
+    return os.path.join(os.path.dirname(__file__), '../assets/GBMdatabase.db')
 
 
 def filepath_instruments(which_file,mode):
