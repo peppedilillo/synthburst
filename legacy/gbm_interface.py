@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import sqlite3, json
 import pickle
 
-from synthburst._paths import filepath_database, filepath_gbm
-from synthburst.shared import _LightCurve
+from legacy._paths import filepath_database, filepath_gbm
+from legacy.shared import _LightCurve
 
 
 class _LightCurveGBM(_LightCurve):

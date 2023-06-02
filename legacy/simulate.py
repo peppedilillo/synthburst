@@ -13,12 +13,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from lmfit import Parameters, minimize
 
-from synthburst.shared import _LightCurve, _pdf
-from synthburst.gbm_interface import _LightCurveGBM
-from synthburst.mcarlo import generate_by_invsampl
-from synthburst.shared import convert_to_fits
-from synthburst.models import _instrument_X, _background_X, _instrument_S, _background_S
-from synthburst.models import Band
+from legacy.shared import _LightCurve, _pdf
+from legacy.gbm_interface import _LightCurveGBM
+from legacy.mcarlo import generate_by_invsampl
+from legacy.shared import convert_to_fits
+from legacy.models import _instrument_X, _background_X, _instrument_S, _background_S
+from legacy.models import Band
 
 
 def estimate_burst_activity_dur(burst_pdf, fraction=0.1):   # TODO: is this safe with uneven binlength?

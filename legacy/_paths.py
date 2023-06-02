@@ -5,13 +5,13 @@ def filepath_gbm(grb_id):
     #return os.path.join('D:/GRB_GBM_pickles/tte_data_' + grb_id + '.pkl')
     #return os.path.join('D:/magazzino/GRB_GBM_pickles/tte_data_' + grb_id + '.pkl')
     return os.path.join(os.path.dirname(__file__),
-                        os.path.join('gbm_models',
+                        os.path.join('../gbm_models',
                                      'tte_data_')
                         + grb_id + '.pkl')
 
 
 def filepath_database():
-    return os.path.join(os.path.dirname(__file__), './GBMdatabase.db')
+    return os.path.join(os.path.dirname(__file__), '../GBMdatabase.db')
 
 
 def filepath_instruments(which_file,mode):
@@ -27,7 +27,7 @@ def filepath_instruments(which_file,mode):
     elif mode == 'X':
         filename = 'HERMES-X_onaxis_v3d1_MLI2layer.' + which_file
     # abspath for mixed shitty slash
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), 'detector_matrices', filename))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../detector_matrices', filename))
 
 
 def filepath_background_sim(mode):
@@ -42,4 +42,4 @@ def filepath_background_sim(mode):
     elif mode == 'X':
         filename = 'HERMES-X_onaxis_LOWLAT_600_v5.bkg'
     # abspath for mixed shitty slash
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), 'detector_matrices', filename))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '../detector_matrices', filename))

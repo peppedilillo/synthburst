@@ -1,6 +1,6 @@
 import numpy as np
 import astropy.io.fits as fits
-from synthburst._paths import filepath_instruments
+from legacy._paths import filepath_instruments
 
 
 class _GenericDisplay:

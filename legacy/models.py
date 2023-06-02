@@ -5,7 +5,7 @@ import scipy.integrate as integrate
 from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from synthburst._paths import filepath_instruments, filepath_background_sim
+from legacy._paths import filepath_instruments, filepath_background_sim
 
 # a few band parametization. note that these are median values.
 grb990123 =  {'alpha' : -0.6, 'beta' : -3.1, 'e_peak' : 720}
