@@ -1,7 +1,8 @@
 import urllib.request
 import requests
 from pathlib import Path
-
+from typing import Dict, List
+import os
 import paths
 from database import get_db
 from errors import TTEDownloadError
@@ -18,21 +19,28 @@ def map_det():
     dct_map_td["NAI_11"] = "b"
     return dct_map_td
 
-def _url(grb_id):
+
+def _url(grb_id:str) -> str:
     year = grb_id[0:2]
     url = f"https://heasarc.gsfc.nasa.gov/FTP/fermi/data/gbm/bursts/20{year}/bn{grb_id}/current/"
     return url
 
-def _download_grb(grb_id, grb_td, dct_map_td, folderpath=paths.ttes()):
+
+def _download_grb(
+        grb_id: str,
+        grb_td: List[str],
+        dct_map_td: Dict[str, str],
+        folderpath: Path=paths.ttes()
+) -> None:
     """
     Private method. This method download a single GRB given its name, triggered detectors, detectors mapping and path to
     save those. There are performed https requests to query the last version of the TTE and then download it if not
     already present in PATH_TO_SAVE.
-    :param grb_id: str, id NUMBER of the GRB. E.g. "080714086".
-    :param grb_td: str, list of triggered detector. E.g. "NAI_01, NAI_11".
-    :param dct_map_td: dict, dictionary of mapping detectors name. E.g. NAI_00 -> 0.
-    :param folderpath: str, path where to save TTE files.
-    :return: None
+    :param grb_id: id NUMBER of the GRB. E.g. "080714086".
+    :param grb_td: list of triggered detector. E.g. "NAI_01, NAI_11".
+    :param dct_map_td: dictionary of mapping detectors name. E.g. NAI_00 -> 0.
+    :param folderpath: path where to save TTE files.
+    :returns: None
     """
     for td in dct_map_td.keys():
         if td not in grb_td:
@@ -58,7 +66,10 @@ def _download_grb(grb_id, grb_td, dct_map_td, folderpath=paths.ttes()):
         urllib.request.urlretrieve(str_ftp_http, filepath)
 
 
-def download_all_grb(folderpath=paths.ttes(), dbpath=paths.database):
+def download_all_grb(
+        folderpath: Path=paths.ttes(),
+        dbpath: Path=paths.database
+) -> None:
     """
     Download all the GRBs listed in the DB in db_path and save those in the PATH_TO_SAVE folder.
     :param folderpath: str, path to save the TTE files.
@@ -76,7 +87,10 @@ def download_all_grb(folderpath=paths.ttes(), dbpath=paths.database):
         _download_grb(grb_id, grb_td, dct_map_td, folderpath)
 
 
-def download_grb(grb_id, folderpath=paths.ttes()):
+def download_grb(
+        grb_id:str,
+        folderpath:Path=paths.ttes()
+) -> None:
     """
     Download a single GRB given its id name.
     :param grb_id: id of the GRB. Note: specify the "bn" at the beginning. E.g. bn080714086.
