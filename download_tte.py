@@ -18,7 +18,6 @@ def map_det():
     dct_map_td["NAI_11"] = "b"
     return dct_map_td
 
-
 def _url(grb_id):
     year = grb_id[0:2]
     url = f"https://heasarc.gsfc.nasa.gov/FTP/fermi/data/gbm/bursts/20{year}/bn{grb_id}/current/"
@@ -36,26 +35,27 @@ def _download_grb(grb_id, grb_td, dct_map_td, folderpath=paths.ttes()):
     :return: None
     """
     for td in dct_map_td.keys():
-        if td in grb_td:
-            # Get the id of the detectors
-            n_td = dct_map_td[td]
-            # Build the HTTPS folder link and get the last version of the TTE file
-            str_http_folder = _url(grb_id)
-            response = (requests.get(str_http_folder))
-            if response.status_code == 404:
-                raise TTEDownloadError()
-            response_txt = (requests.get(str_http_folder)).text
-            idx_txt_version = response_txt.find(f"glg_tte_n{n_td}_bn{grb_id}_v")
-            tte_version = response_txt[idx_txt_version+24:idx_txt_version+26]
-            # Define the TTE file name founded and the complete HTTPS link path
-            str_tte_file = f"glg_tte_n{n_td}_bn{grb_id}_v{tte_version}.fit"
-            str_ftp_http = str_http_folder + str_tte_file
-            # If the file already exists skip the file
-            filepath = Path(folderpath).joinpath(str_tte_file)
-            if filepath.is_file():
-                continue
-            print("Downloading: ", str_ftp_http)
-            urllib.request.urlretrieve(str_ftp_http, filepath)
+        if td not in grb_td:
+            continue
+        # Get the id of the detectors
+        n_td = dct_map_td[td]
+        # Build the HTTPS folder link and get the last version of the TTE file
+        str_http_folder = _url(grb_id)
+        response = (requests.get(str_http_folder))
+        if response.status_code == 404:
+            raise TTEDownloadError()
+        response_txt = (requests.get(str_http_folder)).text
+        idx_txt_version = response_txt.find(f"glg_tte_n{n_td}_bn{grb_id}_v")
+        tte_version = response_txt[idx_txt_version+24:idx_txt_version+26]
+        # Define the TTE file name founded and the complete HTTPS link path
+        str_tte_file = f"glg_tte_n{n_td}_bn{grb_id}_v{tte_version}.fit"
+        str_ftp_http = str_http_folder + str_tte_file
+        # If the file already exists skip the file
+        filepath = Path(folderpath).joinpath(str_tte_file)
+        if filepath.is_file():
+            continue
+        print("Downloading: ", str_ftp_http)
+        urllib.request.urlretrieve(str_ftp_http, filepath)
 
 
 def download_all_grb(folderpath=paths.ttes(), dbpath=paths.database):
