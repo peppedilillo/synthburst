@@ -1,11 +1,10 @@
-import sqlite3
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import pandas as pd
 
 import paths
-
+from utils import DETECTOR_MAP_KEYS
 
 _memory = {}
 
@@ -18,27 +17,39 @@ def get_db(dbpath: Path=paths.database):
     """
     if "database" in _memory:
         return _memory["database"]
-    conn = sqlite3.connect(dbpath)
-    name_tab = pd.read_sql(
-        "SELECT name FROM sqlite_master WHERE type='table';", conn
-    ).values[0, 0]
-    # Query to fetch the table data
-    query = f"SELECT * FROM {name_tab}"
-    # Read the table into a pandas DataFrame
-    df = pd.read_sql_query(query, conn)
+    df = pd.read_csv(dbpath, dtype={'bcat_detector_mask': object})
     _memory["database"] = df
     return df
 
 
-def triggered_detectors(
-    grb_id: str,
-) -> List[str]:
+def get_metadata(grb_id: str) -> Dict:
+    """
+    Return burst catalog entry relative to grb
+    :param grb_id: id NUMBER of the GRB. E.g. "080714086".
+    :return: a dictionary of metadata
+    """
     df = get_db()
-    grb_td_string = df.loc[df["id"] == grb_id, "trig_det"].values[0]
-    # TODO: reformat db "trig_det" column to avoid this parsing step
-    grb_td = grb_td_string.replace(" ", "").replace("\"", "")[1:-1].split(",")
-    return grb_td
+    metadata = df.loc[df["name"] == "GRB" + grb_id].to_dict(orient="records")[0]
+    return metadata
+
+
+def triggered_detectors(grb_id: str) -> List[str]:
+    """
+    Returns GBM detectors triggered by a grb.
+    :param grb_id: id NUMBER of the GRB. E.g. "080714086".
+    :return: a list of string
+    """
+    df = get_db()
+    bitmask = df.loc[df["name"] == "GRB" + grb_id, "bcat_detector_mask"].values[0]
+    nai_bitmask = bitmask[:len(DETECTOR_MAP_KEYS)]
+    output = [
+        DETECTOR_MAP_KEYS[i] for i, bit in enumerate(nai_bitmask) if int(bit)
+    ]
+    return output
 
 
 if __name__ == "__main__":
+    print("Triggered detectors:")
     print(triggered_detectors("120707800"))
+    print("Metadata from burst catalog:")
+    print(get_metadata("120707800"))

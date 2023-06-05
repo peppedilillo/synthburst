@@ -1,6 +1,6 @@
 import urllib.request
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 import requests
 import numpy as np
@@ -9,22 +9,7 @@ from astropy.io import fits
 import paths
 from database import triggered_detectors
 from errors import TTEDownloadError
-
-
-_DETECTOR_MAP = {
-    "NAI_00": "0",
-    "NAI_01": "1",
-    "NAI_02": "2",
-    "NAI_03": "3",
-    "NAI_04": "4",
-    "NAI_05": "5",
-    "NAI_06": "6",
-    "NAI_07": "7",
-    "NAI_08": "8",
-    "NAI_09": "9",
-    "NAI_10": "a",
-    "NAI_11": "b",
-}
+from utils import DETECTOR_MAP, DETECTOR_MAP_INVERTED
 
 
 def _url(grb_id: str) -> str:
@@ -45,20 +30,22 @@ def _download_ttes(
     :param grb_id: id NUMBER of the GRB. E.g. "080714086".
     :param grb_td: list of triggered detector. E.g. "NAI_01, NAI_11".
     :param folderpath: path where to save TTE files.
-    :returns: list of filepaths
+    :returns: list of filepaths to files downloaded.
     """
+    # TODO: we shouldn't be waiting if data are cached
     filepaths = []
-    for td in _DETECTOR_MAP.keys():
+    for td in DETECTOR_MAP.keys():
         if td not in grb_td:
             continue
         # Get the id of the detectors
-        n_td = _DETECTOR_MAP[td]
+        n_td = DETECTOR_MAP[td]
         # Build the HTTPS folder link and get the last version of the TTE file
         str_http_folder = _url(grb_id)
         response = requests.get(str_http_folder)
         if response.status_code == 404:
             raise TTEDownloadError()
         response_txt = (requests.get(str_http_folder)).text
+        # works when version is greater than 0
         idx_txt_version = response_txt.find(f"glg_tte_n{n_td}_bn{grb_id}_v")
         tte_version = response_txt[idx_txt_version + 24 : idx_txt_version + 26]
         # Define the TTE file name founded and the complete HTTPS link path
@@ -89,14 +76,14 @@ def fetch_datafiles(
     grb_id: str,
 ) -> List[Path]:
     """
-    Returns all stored datafiles relative to a grb. Download if not available.
+    Returns all stored datafiles relative to a grb.
+    Downloads if not cached already.
     :param grb_id: id of the GRB, e.g. "080714086".
     :return: a list of paths
     """
     detectors = triggered_detectors(grb_id)
     cached = [f for f in list(paths.ttes().iterdir()) if grb_id in f.name]
-    _INV_DETECTOR_MAP = {v: k for k, v in _DETECTOR_MAP.items()}
-    cached_detectors = [_INV_DETECTOR_MAP[f.name[9:10]] for f in cached]
+    cached_detectors = [DETECTOR_MAP_INVERTED[f.name[9:10]] for f in cached]
     missing_detectors = set(detectors) - set(cached_detectors)
     downloaded = _download_ttes(grb_id, missing_detectors)
     return cached + downloaded
@@ -104,7 +91,8 @@ def fetch_datafiles(
 
 def get_events(grb_id: str) -> np.ndarray:
     """
-    A function returning all
+    A function returning all grb's tte events from its triggered detectors,
+    meshed (sorted by time) together.
     :param grb_id: id of the GRB, e.g. "080714086".
     :return: an array with columns corresponding to time, low energy bin edge,
              hi energy bin edge.
@@ -131,8 +119,8 @@ def get_events(grb_id: str) -> np.ndarray:
 
 if __name__ == "__main__":
     print("Downloading data if missing.")
-    print([f.name for f in download_ttes("171030729")])
-    print("GRB has been stored here.")
-    print([f.name for f in fetch_datafiles("171030729")])
-    print("These are the first 5 events:")
+    print([f.name for f in download_ttes("150118409")])
+    print("GRB stored here.")
+    print([f.name for f in fetch_datafiles("150118409")])
+    print("These are the first 5 events from triggered detectors:")
     print(get_events("171030729")[:5])

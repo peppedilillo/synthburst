@@ -164,7 +164,6 @@ class _LightCurveGBM(_LightCurve):
         if ylims:
             plt.ylim(*ylims)
         plt.ylabel("Counts/{:.3f} s bin".format(binning))
-
         return fig
 
 
