@@ -1,5 +1,9 @@
 # synthburst
 
-To create the environment, in anaconda:
+To install the environment, in anaconda:
 
 `conda env create -f environment.yml`
+
+To uninstall:
+
+`conda remove --name synthburst --all`
