@@ -6,7 +6,7 @@ from typing import Dict, List
 import requests
 
 import paths
-from database import get_db
+from database import get_db, triggered_detectors
 from errors import TTEDownloadError
 
 
@@ -71,26 +71,6 @@ def _download_grb(
         urllib.request.urlretrieve(str_ftp_http, filepath)
 
 
-def download_all_grb(
-    folderpath: Path = paths.ttes(), dbpath: Path = paths.database
-) -> None:
-    """
-    Download all the GRBs listed in the DB in db_path and save those in the PATH_TO_SAVE folder.
-    :param folderpath: str, path to save the TTE files.
-    :param dbpath: str, path to find the DB Burst info.
-    :return: None
-
-    Example of run: download_all_grb
-    """
-    df = get_db(dbpath)
-    dct_map_td = map_det()
-    # For loop for download TTE events
-    for idx, row in df.iterrows():
-        grb_id = row["id"]
-        grb_td = row["trig_det"]
-        _download_grb(grb_id, grb_td, dct_map_td, folderpath)
-
-
 def download_grb(grb_id: str, folderpath: Path = paths.ttes()) -> None:
     """
     Download a single GRB given its id name.
@@ -98,13 +78,12 @@ def download_grb(grb_id: str, folderpath: Path = paths.ttes()) -> None:
     :param folderpath: Path to save the TTE file.
     :return: None
 
-    Example of run: download_grb("bn080714086")
+    Example of run: download_grb("080714086")
     """
-    df = get_db()
     dct_map_td = map_det()
-    grb_td = df.loc[df["id"] == grb_id[2:], "trig_det"].values[0]
+    grb_td = triggered_detectors(grb_id)
     _download_grb(grb_id[2:], grb_td, dct_map_td, folderpath=folderpath)
 
 
 if __name__ == "__main__":
-    download_grb("bn080714086")
+    download_grb("171030729")
