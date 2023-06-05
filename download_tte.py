@@ -6,7 +6,7 @@ from typing import Dict, List
 import requests
 
 import paths
-from database import get_db, triggered_detectors
+from database import triggered_detectors
 from errors import TTEDownloadError
 
 
