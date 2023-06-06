@@ -14,9 +14,6 @@ class Lightcurve:
         self.data = get_events(grb_id)
         self.background_interval = self._background_interval()
 
-    def get_metadata(self) -> Dict:
-        get_metadata(self.grb_id)
-
     def plot(
         self,
         binning: float = 1.0,
