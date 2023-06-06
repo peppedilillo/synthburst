@@ -17,7 +17,7 @@ def inversion_sampling(
     :return: !!unsorted!! samples
     """
     probability_cdf = np.cumsum(probability)
-    ys = np.random.rand(size) * np.sum(probability)
+    ys = np.random.rand(size) * probability_cdf[-1]
     ii = np.searchsorted(probability_cdf, ys)
     top_edges = bins[ii + 1]
     samples = top_edges - np.random.rand(size) * (top_edges - bins[ii])
