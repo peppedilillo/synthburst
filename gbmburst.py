@@ -81,7 +81,7 @@ class Lightcurve:
         margin_lo = (trigger_time - mintime) / 3
         margin_hi = (maxtime - (trigger_time + t90)) / 5
         lo_bot, lo_top = mintime - trigger_time + 1, -margin_lo
-        hi_bot, hi_top = t90 + margin_hi, maxtime - 1
+        hi_bot, hi_top = t90 + margin_hi, maxtime - trigger_time - 1
         return lo_bot, lo_top, hi_bot, hi_top
 
     def _background_interval(self) -> Tuple[float, float, float, float]:
@@ -106,5 +106,5 @@ class Lightcurve:
 
 
 if __name__ == "__main__":
-    fig, ax = Lightcurve("120707800").plot(dpi=150, figsize=(11, 4), binning=0.1)
+    fig, ax = Lightcurve("140603476").plot(dpi=150, figsize=(11, 4), binning=0.1)
     plt.show()
