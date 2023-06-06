@@ -1,9 +1,10 @@
-from typing import Tuple, Any, Dict
+from typing import Any, Dict, Tuple
 
-from download_tte import get_events
-from database import get_metadata
 import matplotlib.pyplot as plt
 import numpy as np
+
+from database import get_metadata
+from download_tte import get_events
 
 
 class Lightcurve:
@@ -18,7 +19,7 @@ class Lightcurve:
 
     def plot(
         self,
-        binning: float=1.0,
+        binning: float = 1.0,
         xlims: Tuple[float, float] | None = None,
         ylims: Tuple[float, float] | None = None,
         energy_range: Tuple[float, float] | None = (50, 300),
@@ -35,14 +36,8 @@ class Lightcurve:
         )
 
         fig, ax = plt.subplots(**kwargs)
-        ax.step(bins[:-1], counts, color='k')
-        ax.axvspan(
-            lo_bot,
-            lo_top,
-            color="red",
-            alpha=0.1,
-            label="background region"
-        )
+        ax.step(bins[:-1], counts, color="k")
+        ax.axvspan(lo_bot, lo_top, color="red", alpha=0.1, label="background region")
         ax.axvspan(
             hi_bot,
             hi_top,
@@ -52,8 +47,10 @@ class Lightcurve:
         ax.axvline(0, linestyle="dotted", c="orange", linewidth=1, label="trigger")
         ax.set_title("GRB{}. t90: {:.2f}".format(self.grb_id, self.metadata["t90"]))
         ax.set_xlabel("Time (from trigger) [s]")
-        if xlims: plt.xlim(*xlims)
-        if ylims: plt.ylim(*ylims)
+        if xlims:
+            plt.xlim(*xlims)
+        if ylims:
+            plt.ylim(*ylims)
         plt.ylabel("Counts/{:.3f} s bin".format(binning))
         return fig, ax
 
@@ -86,7 +83,7 @@ class Lightcurve:
 
         margin_lo = (trigger_time - mintime) / 3
         margin_hi = (maxtime - (trigger_time + t90)) / 5
-        lo_bot, lo_top = mintime - trigger_time + 1, - margin_lo
+        lo_bot, lo_top = mintime - trigger_time + 1, -margin_lo
         hi_bot, hi_top = t90 + margin_hi, maxtime - 1
         return lo_bot, lo_top, hi_bot, hi_top
 
@@ -100,7 +97,7 @@ class Lightcurve:
         lo_bot, lo_top, hi_bot, hi_top = self._background_interval_from_catalog()
         assert lo_bot < lo_top
         assert hi_bot < hi_top
-        mintime, maxtime = self.data[0,0], self.data[0, -1]
+        mintime, maxtime = self.data[0, 0], self.data[0, -1]
 
         if (lo_bot < mintime) & (hi_top > maxtime):
             lo_bot, lo_top, hi_bot, hi_top = self._background_interval_from_t90()

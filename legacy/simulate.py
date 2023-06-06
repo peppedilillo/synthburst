@@ -15,13 +15,8 @@ from lmfit import Parameters, minimize
 
 from legacy.gbm_interface import _LightCurveGBM
 from legacy.mcarlo import generate_by_invsampl
-from legacy.models import (
-    Band,
-    _background_S,
-    _background_X,
-    _instrument_S,
-    _instrument_X,
-)
+from legacy.models import (Band, _background_S, _background_X, _instrument_S,
+                           _instrument_X)
 from legacy.shared import _LightCurve, _pdf, convert_to_fits
 
 

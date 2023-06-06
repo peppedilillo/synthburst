@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 import pandas as pd
 
@@ -9,7 +9,7 @@ from utils import DETECTOR_MAP_KEYS
 _memory = {}
 
 
-def get_db(dbpath: Path=paths.database):
+def get_db(dbpath: Path = paths.database):
     """
     Return the table of Burst in the db_path selected.
     :param dbpath: str, DB path in which is stored the SQLite DB with events information.
@@ -17,7 +17,7 @@ def get_db(dbpath: Path=paths.database):
     """
     if "database" in _memory:
         return _memory["database"]
-    df = pd.read_csv(dbpath, dtype={'bcat_detector_mask': object})
+    df = pd.read_csv(dbpath, dtype={"bcat_detector_mask": object})
     _memory["database"] = df
     return df
 
@@ -41,10 +41,8 @@ def triggered_detectors(grb_id: str) -> List[str]:
     """
     df = get_db()
     bitmask = df.loc[df["name"] == "GRB" + grb_id, "bcat_detector_mask"].values[0]
-    nai_bitmask = bitmask[:len(DETECTOR_MAP_KEYS)]
-    output = [
-        DETECTOR_MAP_KEYS[i] for i, bit in enumerate(nai_bitmask) if int(bit)
-    ]
+    nai_bitmask = bitmask[: len(DETECTOR_MAP_KEYS)]
+    output = [DETECTOR_MAP_KEYS[i] for i, bit in enumerate(nai_bitmask) if int(bit)]
     return output
 
 
