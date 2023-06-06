@@ -1,13 +1,13 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from gbmburst import Lightcurve as GRBModel
-import matplotlib.pyplot as plt
 
 
 def inversion_sampling(
-        size: int,
-        bins: np.ndarray,
-        probability: np.ndarray,
+    size: int,
+    bins: np.ndarray,
+    probability: np.ndarray,
 ) -> np.ndarray:
     """
     Fast inversion sampling from discrete distribution.
@@ -45,7 +45,9 @@ class Burst:
 
     def pdf(self):
         _, lo_top, hi_bot, _ = self.model.background_interval
-        times = np.unique(self.model.get_times()) - self.model.metadata["trigger_time_met"]
+        times = (
+            np.unique(self.model.get_times()) - self.model.metadata["trigger_time_met"]
+        )
         bins = times[(times > lo_top) & (times <= hi_bot)]
         probability = 1 / np.diff(bins)
         return bins, probability
