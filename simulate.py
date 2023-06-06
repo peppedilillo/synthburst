@@ -45,9 +45,7 @@ class Burst:
 
     def pdf(self):
         _, lo_top, hi_bot, _ = self.model.background_interval
-        times = (
-            np.unique(self.model.get_times()) - self.model.metadata["trigger_time_met"]
-        )
+        times = np.unique(self.model.get_times())
         bins = times[(times > lo_top) & (times <= hi_bot)]
         probability = 1 / np.diff(bins)
         return bins, probability

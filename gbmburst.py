@@ -21,9 +21,9 @@ class Lightcurve:
 
     def get_times(self) -> np.ndarray:
         """
-        :return: array containing time tagged events time in s ("TIME" in fits, MET).
+        :return: array containing time tagged events time in s (from trigger).
         """
-        return self.data[:, 0]
+        return self.data[:, 0] - self.metadata["trigger_time_met"]
 
     def get_emin(self) -> np.ndarray:
         """
@@ -80,7 +80,7 @@ class Lightcurve:
         :return: a function, call over array of times to get background estimates.
         """
         lo_bot, lo_top, hi_bot, hi_top = self.background_interval
-        times = self.get_times() - self.metadata["trigger_time_met"]
+        times = self.get_times()
         times_lo = times[(times > lo_bot) & (times < lo_top)]
         times_hi = times[(times > hi_bot) & (times < hi_top)]
         bins_lo = np.arange(lo_bot, lo_top + binning, binning)
@@ -113,7 +113,7 @@ class Lightcurve:
         :return:
         """
         lo_en, hi_en = energy_range
-        data = self.data[(self.data[:, 2] > lo_en) & (self.data[:, 1] < hi_en)]
+        data = self.data[(self.get_emin() > lo_en) & (self.get_emax() < hi_en)]
         times = data[:, 0] - self.metadata["trigger_time_met"]
         lo_bot, lo_top, hi_bot, hi_top = self.background_interval
         bins = np.arange(self._tmin, self._tmax, binning)
