@@ -29,9 +29,7 @@ DETECTOR_MAP_VALUES = [
     "b",
 ]
 
-DETECTOR_MAP = {
-    k: v for k, v in list(zip(DETECTOR_MAP_KEYS, DETECTOR_MAP_VALUES))
-}
+DETECTOR_MAP = {k: v for k, v in list(zip(DETECTOR_MAP_KEYS, DETECTOR_MAP_VALUES))}
 
 DETECTOR_MAP_INVERTED = {
     v: k for k, v in list(zip(DETECTOR_MAP_KEYS, DETECTOR_MAP_VALUES))

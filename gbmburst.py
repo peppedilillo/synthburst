@@ -11,7 +11,7 @@ class Lightcurve:
     def __init__(self, grb_id: str):
         self.data = get_events(grb_id)
         self._tmin = self.data[0, 0]
-        self._tmax = self.data[0,-1]
+        self._tmax = self.data[0, -1]
         self._energies = None
         self.grb_id = grb_id
         self.metadata = get_metadata(grb_id)
@@ -139,14 +139,17 @@ class Lightcurve:
             linewidth=1,
             label="Trigger time",
         )
+
+        if xlims:
+            ax.set_xlim(*xlims)
+        if ylims:
+            ax.set_ylim(*ylims)
         ax.set_title(
             "GRB{}. t90: {:.2f}. {:.1f} - {:.1f} keV".format(
                 self.grb_id, self.metadata["t90"], lo_en, hi_en
             )
         )
         ax.set_xlabel("Time (from trigger) [s]")
-        if xlims: ax.set_xlim(*xlims)
-        if ylims: ax.set_ylim(*ylims)
         ax.set_ylabel("Counts/{:.3f} s bin".format(binning))
         plt.legend()
         # fmt on
