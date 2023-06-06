@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Callable
+from typing import Any, Callable, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np

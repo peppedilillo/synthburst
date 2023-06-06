@@ -17,7 +17,7 @@ class Burst:
         pass
 
     def generate_burst(self, size):
-
+        pass
 
 
 class Lightcuve:
