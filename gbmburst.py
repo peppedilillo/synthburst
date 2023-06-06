@@ -112,7 +112,7 @@ class Lightcurve:
         bins = np.arange(times[0], times[-1], binning)
         counts, bins = np.histogram(times, bins=bins)
 
-        # fmt off
+        # fmt: off
         fig, ax = plt.subplots(**kwargs)
         ax.step(
             bins[:-1],
@@ -140,10 +140,8 @@ class Lightcurve:
             label="Trigger time",
         )
 
-        if xlims:
-            ax.set_xlim(*xlims)
-        if ylims:
-            ax.set_ylim(*ylims)
+        if xlims: ax.set_xlim(*xlims)
+        if ylims: ax.set_ylim(*ylims)
         ax.set_title(
             "GRB{}. t90: {:.2f}. {:.1f} - {:.1f} keV".format(
                 self.grb_id, self.metadata["t90"], lo_en, hi_en
@@ -152,7 +150,7 @@ class Lightcurve:
         ax.set_xlabel("Time (from trigger) [s]")
         ax.set_ylabel("Counts/{:.3f} s bin".format(binning))
         plt.legend()
-        # fmt on
+        # fmt: on
         return fig, ax
 
 
