@@ -119,7 +119,7 @@ def get_events(grb_id: str) -> np.ndarray:
 
 if __name__ == "__main__":
     print("Downloading data if missing.")
-    print([f.name for f in download_ttes("150118409")])
+    # print([f.name for f in download_ttes("150118409")])
     print("GRB stored here.")
     print([f.name for f in fetch_datafiles("150118409")])
     print("These are the first 5 events from triggered detectors:")
