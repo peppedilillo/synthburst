@@ -10,7 +10,8 @@ def inversion_sampling(
         probability: np.ndarray,
 ) -> np.ndarray:
     """
-    Fast inversion sampling. Does not require bins to be equispaced. ~peppe
+    Fast inversion sampling from discrete distribution.
+    Does not require bins to be equispaced.
     :param size: number of samples to draw
     :param bins: bin edges (len n + 1)
     :param probability: unnormalized probability values (len n).
@@ -62,10 +63,15 @@ class Lightcuve:
 
 
 if __name__ == "__main__":
+    import time
+
     print("loading model")
     x = Burst(model="120707800")
     print("generating burst events")
+    tic = time.time()
     data = x.generate_times(1_000_000)
+    toc = time.time()
+    print(f"took {toc - tic} s.")
     print("plotting")
     bins = np.arange(np.min(data), np.max(data), 0.1)
     counts, _ = np.histogram(data, bins=bins)
