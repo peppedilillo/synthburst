@@ -1,4 +1,4 @@
-from typing import Tuple, Any
+from typing import Tuple, Any, Dict
 
 from download_tte import get_events
 from database import get_metadata
@@ -13,7 +13,7 @@ class Lightcurve:
         self.data = get_events(grb_id)
         self.background_interval = self._background_interval()
 
-    def get_metadata(self):
+    def get_metadata(self) -> Dict:
         get_metadata(self.grb_id)
 
     def plot(
