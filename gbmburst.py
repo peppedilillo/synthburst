@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any, Tuple, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,13 +9,15 @@ from download_tte import get_events
 
 class Lightcurve:
     def __init__(self, grb_id: str):
-        self.data = get_events(grb_id)
-        self._tmin = self.data[0, 0]
-        self._tmax = self.data[0, -1]
-        self._energies = None
+        # TODO: add an option for selecting detectors
         self.grb_id = grb_id
+        self.data = get_events(grb_id)
         self.metadata = get_metadata(grb_id)
-        self.background_interval = self._background_interval()
+        trigger_time_met = self.metadata["trigger_time_met"]
+        self._tmin = self.data[0, 0] - trigger_time_met
+        self._tmax = self.data[-1, 0] - trigger_time_met
+        self._energies = None
+        self.background_interval = self._background_interval_from_t90()
 
     def get_times(self) -> np.ndarray:
         """
@@ -63,30 +65,35 @@ class Lightcurve:
         trigger_time = self.metadata["trigger_time_met"]
         t90 = self.metadata["t90"]
 
-        margin_lo = (trigger_time - self._tmin) / 3
-        margin_hi = (self._tmax - (trigger_time + t90)) / 5
-        lo_bot, lo_top = self._tmin - trigger_time + 1, -margin_lo
-        hi_bot, hi_top = t90 + margin_hi, self._tmax - trigger_time - 1
+        margin_lo = -self._tmin / 3
+        margin_hi = (self._tmax - t90) / 5
+        lo_bot, lo_top = self._tmin + 1, -margin_lo
+        hi_bot, hi_top = t90 + margin_hi, self._tmax - 1
         return lo_bot, lo_top, hi_bot, hi_top
 
-    def _background_interval(self) -> Tuple[float, float, float, float]:
+    def fit_background(self, binning, deg=2) -> Callable:
         """
-        returns background interval boundaries based on catalog (if sane)
-        or burst's t90.
-        :return: a 4-tuple representing
-        (back_low_start, back_low_stop, back_hi_start, back_hi_stop)
+        Fits binned data according to boundaries attribute `background_interval`
+        and returns a polynomial function.
+        :param binning: histogram binlength
+        :param deg: polynomial degree
+        :return: a function, call over array of times to get background estimates.
         """
-        lo_bot, lo_top, hi_bot, hi_top = self._background_interval_from_catalog()
-        assert lo_bot < lo_top
-        assert hi_bot < hi_top
-
-        if (lo_bot < self._tmin) & (hi_top > self._tmax):
-            lo_bot, lo_top, hi_bot, hi_top = self._background_interval_from_t90()
-        elif lo_bot < self._tmin:
-            lo_bot, lo_top, *_ = self._background_interval_from_t90()
-        elif hi_top < self._tmax:
-            *_, hi_bot, hi_top = self._background_interval_from_t90()
-        return lo_bot, lo_top, hi_bot, hi_top
+        lo_bot, lo_top, hi_bot, hi_top = self.background_interval
+        times = self.get_times() - self.metadata["trigger_time_met"]
+        times_lo = times[(times > lo_bot) & (times < lo_top)]
+        times_hi = times[(times > hi_bot) & (times < hi_top)]
+        bins_lo = np.arange(lo_bot, lo_top + binning, binning)
+        counts_lo, _ = np.histogram(times_lo, bins=bins_lo)
+        bins_hi = np.arange(hi_bot, hi_top + binning, binning)
+        counts_hi, _ = np.histogram(times_hi, bins=bins_hi)
+        midpoints_lo = (bins_lo[1:] + bins_lo[:-1]) / 2
+        midpoints_hi = (bins_hi[1:] + bins_hi[:-1]) / 2
+        midpoints = np.concatenate((midpoints_lo, midpoints_hi))
+        counts = np.concatenate((counts_lo, counts_hi))
+        z = np.polyfit(midpoints, counts, deg=deg)
+        p = np.poly1d(z)
+        return p
 
     def plot(
         self,
@@ -109,8 +116,11 @@ class Lightcurve:
         data = self.data[(self.data[:, 2] > lo_en) & (self.data[:, 1] < hi_en)]
         times = data[:, 0] - self.metadata["trigger_time_met"]
         lo_bot, lo_top, hi_bot, hi_top = self.background_interval
-        bins = np.arange(times[0], times[-1], binning)
+        bins = np.arange(self._tmin, self._tmax, binning)
         counts, bins = np.histogram(times, bins=bins)
+        midpoints = (bins[:-1] + bins[1:]) / 2
+        p = self.fit_background(binning)
+        background = p(midpoints)
 
         # fmt: off
         fig, ax = plt.subplots(**kwargs)
@@ -118,6 +128,12 @@ class Lightcurve:
             bins[:-1],
             counts,
             color="k",
+        )
+        ax.plot(
+            midpoints,
+            background,
+            color="red",
+            label="Best background fit",
         )
         ax.axvspan(
             lo_bot,
@@ -140,7 +156,8 @@ class Lightcurve:
             label="Trigger time",
         )
 
-        if xlims: ax.set_xlim(*xlims)
+        xlims_ = (self._tmin, self._tmax) if xlims is None else xlims
+        ax.set_xlim(*xlims_)
         if ylims: ax.set_ylim(*ylims)
         ax.set_title(
             "GRB{}. t90: {:.2f}. {:.1f} - {:.1f} keV".format(
@@ -155,5 +172,5 @@ class Lightcurve:
 
 
 if __name__ == "__main__":
-    fig, ax = Lightcurve("120707800").plot(dpi=150, figsize=(11, 4), binning=0.1)
+    fig, ax = Lightcurve("200219317").plot(dpi=150, figsize=(11, 4), binning=0.1)
     plt.show()

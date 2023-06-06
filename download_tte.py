@@ -24,9 +24,10 @@ def _download_ttes(
     folderpath: Path = paths.ttes(),
 ) -> List[Path]:
     """
-    Private method. This method download a single GRB given its name, triggered detectors, detectors mapping and path to
-    save those. There are performed https requests to query the last version of the TTE and then download it if not
-    already present in PATH_TO_SAVE.
+    Private method. This method download a single GRB given its name,
+    triggered detectors, detectors mapping and path to save those.
+    There are performed https requests to query the last version of the
+    TTE and then download it if notalready present in PATH_TO_SAVE.
     :param grb_id: id NUMBER of the GRB. E.g. "080714086".
     :param grb_td: list of triggered detector. E.g. "NAI_01, NAI_11".
     :param folderpath: path where to save TTE files.
@@ -103,8 +104,8 @@ def get_events(grb_id: str) -> np.ndarray:
     hi_energy = np.array([])
     for file in filepaths:
         hdul = fits.open(file)
-        _times = hdul[2].data["TIME"]
         channels = hdul[2].data["PHA"]
+        _times = hdul[2].data["TIME"]
         _lo_energy = hdul[1].data["E_MIN"][channels]
         _hi_energy = hdul[1].data["E_MAX"][channels]
         ii = np.searchsorted(times, _times)
@@ -119,7 +120,7 @@ def get_events(grb_id: str) -> np.ndarray:
 
 if __name__ == "__main__":
     print("Downloading data if missing.")
-    # print([f.name for f in download_ttes("150118409")])
+    print([f.name for f in download_ttes("150118409")])
     print("GRB stored here.")
     print([f.name for f in fetch_datafiles("150118409")])
     print("These are the first 5 events from triggered detectors:")

@@ -1,5 +1,5 @@
-detector_matrices/
-gbm_models/
+legacy/detector_matrices/
+legacy/gbm_models/
 assets/base_gbmburstcatalog.csv.zip
 TTE/
 ttedata/
