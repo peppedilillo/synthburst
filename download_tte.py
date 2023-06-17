@@ -34,6 +34,12 @@ def _download_ttes(
     :returns: list of filepaths to files downloaded.
     """
     # TODO: we shouldn't be waiting if data are cached
+    # possible solution:
+    # list_tte_dl = os.listdir(Path(folderpath))
+    # ...
+    # for ...
+    #     if len(([1 for i in list_tte_dl if f"glg_tte_n{n_td}_bn{grb_id}_v" in i]) >= 1:
+    #         continue
     filepaths = []
     for td in DETECTOR_MAP.keys():
         if td not in grb_td:
