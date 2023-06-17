@@ -2,7 +2,7 @@ from pathlib import Path
 
 prjpath = Path(__file__).parent
 assets = prjpath.joinpath("assets")
-database = assets.joinpath("gbmburstcatalog.db")
+database = assets.joinpath("gbmburstcatalog.csv.zip")
 
 
 def create_if_not_exists(func):
