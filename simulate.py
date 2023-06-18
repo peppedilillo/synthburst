@@ -53,23 +53,26 @@ class ConstantBackground:
 
 
 class TemplateBackground:
-    def __init__(self):
-        print("Load templates")
-        self.templates = bkg_template_split()
-
+    def __init__(self, id_t):
+        """
+        Init the background template class.
+        :param id_t: Tuple identifier of the template (orbit, detector, energy range). E.g. (3, 'n7', 'r1').
+        """
+        print("Load template")
+        self.template = bkg_template_split()[id_t[0]][id_t[1]][id_t[2]].reset_index(drop=True)
+        # Bin time of the template. Usually is 4.096.
+        self.bin_time = 4.096
     @timer
-    def generate_times(self, mean_rate, tmin, tmax, id_t, distribution='inversion_sampling', bin_time: float = 4.096):
+    def generate_times(self, mean_rate, tmin, tmax, distribution='inversion_sampling'):
         """
         Given a template defined by id_t a TTE list is created to emulate the background dynamics.
         :param mean_rate: Average number of events expected in 1 s.
         :param tmin: Minimum time to select the background template (usually is 0).
         :param tmax: Maximum time to select the background template.
-        :param id_t: Tuple identifier of the template (orbit, detector, energy range). E.g. (3, 'n7', 'r1').
         :param distribution: str, define the type of sampling. E.g. 'inversion_sampling', 'normal', 'poisson'.
-        :param bin_time: Bin time of the template. Usually is 4.096.
         :return: list, the ordered event list.
         """
-        template = self.templates[id_t[0]][id_t[1]][id_t[2]].reset_index(drop=True)
+        template = self.template
         template = template.loc[(template.met >= tmin) & (template.met <= tmax), :]
         # Define list TTE
         list_tte = np.array([])
@@ -81,7 +84,8 @@ class TemplateBackground:
                 counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=id_t[2],
                                       scale_mean_rate=scale_mean_rate)
                 # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
-                time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, counts))
+                time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] +
+                                                     self.bin_time, counts))
                 # equispaced event generation
                 # time_tte = np.arange(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, 1/counts)
                 list_tte = np.append(list_tte, time_tte)
@@ -94,6 +98,7 @@ class TemplateBackground:
 
         print("finish generation")
         return list_tte - tmin
+
 
 class Burst:
     def __init__(self, model):
@@ -164,9 +169,8 @@ def plot_lightcurve(data, bin_time=4):
 if __name__ == "__main__":
 
     print("loading bkg model")
-    tb = TemplateBackground()
-    bkg_data = tb.generate_times(mean_rate=500, distribution='inversion_sampling', tmin=0, tmax=1500,
-                                 id_t=(3, 'n7', 'r1'))
+    tb = TemplateBackground(id_t=(3, 'n7', 'r1'))
+    bkg_data = tb.generate_times(mean_rate=500, distribution='inversion_sampling', tmin=0, tmax=1500)
     print("plotting bkg")
     plot_lightcurve(bkg_data)
 
