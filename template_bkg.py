@@ -63,16 +63,17 @@ def bkg_template_split(min_split: float = 96.5, bln_plot: bool = False) -> Dict:
     return templates
 
 
-def sample_count(counts: int,  type_random: str = 'poisson', en_range=None) -> int:
+def sample_count(counts: int,  type_random: str = 'poisson', en_range=None, scale_mean_rate=1) -> int:
     """
     Sample a count from the random variable chosen.
     :param counts: int, number of counts.
     :param type_random: str, type of random variable. 'poisson' or 'normal'.
     :param en_range: str, the energy range of the count rates. For poisson is ignored.
+    :param scale_mean_rate: Amplify the count rates by scale.
     :return: the count rate sampled.
     """
     if type_random == 'poisson':
-        return np.random.poisson(counts)
+        return np.random.poisson(counts*scale_mean_rate)
     elif type_random == 'normal':
         # Error or the prediction for each energy range. The scale factor it to convert MAD to STD.
         if en_range == 'r2':
@@ -83,7 +84,7 @@ def sample_count(counts: int,  type_random: str = 'poisson', en_range=None) -> i
             std = 5/(2/3)
         else:
             std = 5/(2/3)
-        return max(int(np.random.normal(counts, std)), 0)
+        return max(int(np.random.normal(counts*scale_mean_rate, std)), 0)
     else:
         logging.error("Type of random variable not specified in sample_count.")
         raise

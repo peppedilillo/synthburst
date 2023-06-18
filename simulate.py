@@ -58,13 +58,16 @@ class TemplateBackground:
         self.templates = bkg_template_split()
 
     @timer
-    def generate_times(self, tmin, tmax, id_t, scale=1, bin_time: float = 4.096):
+    def generate_times(self, size, tmin, tmax, id_t, distribution='inversion_sampling', scale_mean_rate=1,
+                       bin_time: float = 4.096):
         """
         Given a template defined by id_t a TTE list is created to emulate the background dynamics.
+        :param size: Number of events in the TTE. Not used if distribution is Normal or Poisson.
         :param tmin: Minimum time to select the background template (usually is 0).
         :param tmax: Maximum time to select the background template.
         :param id_t: Tuple identifier of the template (orbit, detector, energy range). E.g. (3, 'n7', 'r1').
-        :param scale: Amplify the count rates by scale.
+        :param distribution: str, define the type of sampling. E.g. 'inversion_sampling', 'normal', 'poisson'.
+        :param scale_mean_rate: Amplify the count rates by scale.
         :param bin_time: Bin time of the template. Usually is 4.096.
         :return: list, the ordered event list.
         """
@@ -73,14 +76,21 @@ class TemplateBackground:
         # Define list TTE
         list_tte = np.array([])
         print("Begin bkg generation")
-        for i in template.index:
-            # From the estimated count draw a poisson random variable
-            counts = sample_count(template.loc[i, 'counts'], type_random='normal', en_range=id_t[2])*scale
-            # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
-            time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, counts))
-            # equispaced event generation
-            # time_tte = np.arange(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, 1/counts)
-            list_tte = np.append(list_tte, time_tte)
+        if distribution in ['normal', 'poisson']:
+            for i in template.index:
+                # From the estimated count draw a poisson random variable
+                counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=id_t[2],
+                                      scale_mean_rate=scale_mean_rate)
+                # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
+                time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, counts))
+                # equispaced event generation
+                # time_tte = np.arange(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, 1/counts)
+                list_tte = np.append(list_tte, time_tte)
+            print(f"INFO: parameter 'size' wasn't used. Number of events generated: {len(list_tte)}")
+        else:
+            list_tte = inversion_sampling(size, template.loc[:, 'met'].values,
+                                          1/(bin_time/(template.loc[:, 'counts'].values[:-1]*scale_mean_rate)))
+
         print("finish generation")
         return list_tte - tmin
 
@@ -128,7 +138,6 @@ class Lightcurve:
         self.background = None
         self.burst = None
 
-
     def add_background(self, background):
         self.background = background
 
@@ -156,14 +165,15 @@ if __name__ == "__main__":
 
     print("loading bkg model")
     tb = TemplateBackground()
-    bkg_data = tb.generate_times(tmin=0, tmax=1500, scale=1, id_t=(3, 'n7', 'r1'))
+    bkg_data = tb.generate_times(size=1000000, distribution='inversion_sampling', tmin=0, tmax=1500,
+                                 scale_mean_rate=2.5, id_t=(3, 'n7', 'r1'))
     print("plotting bkg")
     plot_lightcurve(bkg_data)
 
     print("loading GRB model")
     x = Burst(model="120707800")
     print("generating burst events")
-    grb_data = x.generate_times(1000)
+    grb_data = x.generate_times(3200)
     print("plotting GRB")
     plot_lightcurve(grb_data)
 
