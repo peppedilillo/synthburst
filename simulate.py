@@ -87,12 +87,13 @@ class TemplateBackground:
                 list_tte = np.append(list_tte, time_tte)
             print(f"INFO: parameter 'size' wasn't used. Number of events generated: {len(list_tte)}")
         else:
-            list_tte = inversion_sampling(mean_rate * (tmax - tmin), template.loc[:, 'met'].values,
-                                          1/(bin_time/(template.loc[:, 'counts'].values[:-1])))
+            size = mean_rate * (tmax - tmin)
+            bins = template.loc[:, 'met'].values
+            probabilities = template.loc[:, 'counts'].values[:-1]
+            list_tte = inversion_sampling(size, bins, probabilities)
 
         print("finish generation")
         return list_tte - tmin
-
 
 class Burst:
     def __init__(self, model):
