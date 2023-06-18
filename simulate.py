@@ -81,7 +81,7 @@ class TemplateBackground:
             scale_mean_rate = mean_rate/template['counts'].mean()
             for i in template.index:
                 # From the estimated count draw a poisson random variable
-                counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=id_t[2],
+                counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=self.id_t[2],
                                       scale_mean_rate=scale_mean_rate)
                 # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
                 time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] +
