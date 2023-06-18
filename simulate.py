@@ -59,6 +59,7 @@ class TemplateBackground:
         :param id_t: Tuple identifier of the template (orbit, detector, energy range). E.g. (3, 'n7', 'r1').
         """
         print("Load template")
+        self.id_t = id_t
         self.template = bkg_template_split()[id_t[0]][id_t[1]][id_t[2]].reset_index(drop=True)
         # Bin time of the template. Usually is 4.096.
         self.bin_time = 4.096
