@@ -3,63 +3,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Dict, List
 from database import get_bkg_day
+from utils import DETECTOR_MAP_VALUES, ENRANGE_VALUES
 import logging
 
-np.random.seed(42)
 
-
-def bkg_template_split(min_split: float = 96.5, bln_plot: bool = False) -> Dict:
+def bkg_template_split(min_split: float = 96.5) -> Dict:
     """
     Take a background day estimate and produce a template dictionary (4 dimensions: orbit, detector, energy range,
      values).
     :param min_split: float, Minutes of the background split. By default, it is chosen the Fermi orbit (96.5 minutes).
-    :param bln_plot: bool, if True some examples of templates are plotted.
     :return: Dict, a template which the first dimension is the number of templates,by default are 15 orbits. The next
     dimension is the detector (e.g. n7). Then the range (e.g. r1). Finally, the last dimension can be 'met' that is
     referring the time and 'counts' that is the count rates estimated (e.g. count rates for detector n7,
      in range r1 at the particular met time).
     """
-    # Load count rates background estimate for a day
     bkg_pred = get_bkg_day()
-    # Interval step of 96.5 minutes = 1 orbit
-    interval_step = int(min_split*60)
-    # Iterate for each orbit (or minutes split chosen)
-    counter = 1
+    orbit_duration = min_split * 60
     templates = {}
-    for i in range(0, int((bkg_pred.met.max() - bkg_pred.met.min())) + interval_step, interval_step):
-        if bln_plot:
-            time_filter = (bkg_pred.met_0 >= i) & (bkg_pred.met_0 < i + interval_step)
-            plt.plot(pd.to_datetime(bkg_pred.loc[time_filter, 'timestamp']),
-                     bkg_pred.loc[time_filter, 'n0_r1'], "-.",
-                     label=str(bkg_pred.loc[time_filter, 'met_0'].min()))
-            plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-            plt.title("Background day splitted, detector n0 range r1")
-        templates[counter] = {}
-        # Iterate per each detector
-        for det in ['n0', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'na', 'nb']:
-            templates[counter][det] = {}
-            # Iterate per each range
-            for rng in ['r0', 'r1', 'r2']:
-                # Define the template as (time, count rates) selecting the right period
+    for norbit, tstart in enumerate(np.arange(0, bkg_pred.time.max() + orbit_duration, orbit_duration)):
+        templates[norbit] = {}
+        for ndet in DETECTOR_MAP_VALUES:
+            templates[norbit][ndet] = {}
+            for enrange in ENRANGE_VALUES:
                 df_template_tmp = pd.DataFrame()
-                df_template_tmp['counts'] = bkg_pred.loc[(bkg_pred.met_0 >= i) & (bkg_pred.met_0 < i + interval_step),
-                                                         det + '_' + rng].copy()
-                df_template_tmp['met'] = bkg_pred.loc[(bkg_pred.met_0 >= i) & (bkg_pred.met_0 < i + interval_step),
-                                                      'met'] - \
-                                         bkg_pred.loc[(bkg_pred.met_0 >= i) & (bkg_pred.met_0 < i + interval_step),
-                                                      'met'].min()
-                templates[counter][det][rng] = df_template_tmp
-        counter += 1
-
-    if bln_plot:
-        plt.figure()
-        plt.plot(templates[10]['n7']['r0']['met'], templates[10]['n7']['r0']['counts'], '-.', label='r0')
-        plt.plot(templates[10]['n7']['r1']['met'], templates[10]['n7']['r1']['counts'], '-.', label='r1')
-        plt.plot(templates[10]['n7']['r2']['met'], templates[10]['n7']['r2']['counts'], '-.', label='r2')
-        plt.legend()
-        plt.title("Count rates of orbit #10, detector n7")
-        plt.show()
-
+                mask = (bkg_pred.time >= tstart) & (bkg_pred.time < tstart + orbit_duration)
+                df_template_tmp['counts'] = bkg_pred.loc[mask, ndet + '_' + enrange].copy()
+                df_template_tmp['time'] = bkg_pred.loc[mask, 'time'] - bkg_pred.loc[mask,'time'].min()
+                templates[norbit][ndet][enrange] = df_template_tmp
     return templates
 
 
@@ -143,7 +113,7 @@ def template2tte(template: Dict, bin_time: float = 4.096) -> List:
             # From the estimated count draw a poisson random variable
             counts = sample_count(row['counts'], type_random='normal', en_range=rng)
             # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
-            time_tte = np.random.uniform(row['met'], row['met'] + bin_time, counts).tolist()
+            time_tte = np.random.uniform(row['time'], row['time'] + bin_time, counts).tolist()
             # According to the energy range, sample a specific energy for the photons.
             energy_tte = sample_energy(counts, rng, type_random='custom')
             # Add the events list
@@ -156,7 +126,7 @@ def template2tte(template: Dict, bin_time: float = 4.096) -> List:
 
 if __name__ == "__main__":
     # Create the templates
-    templates = bkg_template_split(bln_plot=True)
+    templates = bkg_template_split()
     # Select the 10th orbit and the detector n7
     list_tte = template2tte(templates[10]['n7'])
     print(list_tte[0:20])
@@ -166,3 +136,4 @@ if __name__ == "__main__":
     plt.figure()
     plt.hist((np.array([i[0] for i in list_tte])[1:] - np.array([i[0] for i in list_tte])[0:-1]), log=True, bins=128)
     plt.title("Distribution time arrival")
+    plt.show()

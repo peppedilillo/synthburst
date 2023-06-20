@@ -1,5 +1,5 @@
 # fmt: off
-DETECTOR_MAP_KEYS = [
+DETECTOR_MAP_KEYS = (
     "NAI_00",
     "NAI_01",
     "NAI_02",
@@ -12,9 +12,9 @@ DETECTOR_MAP_KEYS = [
     "NAI_09",
     "NAI_10",
     "NAI_11",
-]
+)
 
-DETECTOR_MAP_VALUES = [
+DETECTOR_MAP_VALUES = (
     "n0",
     "n1",
     "n2",
@@ -27,7 +27,13 @@ DETECTOR_MAP_VALUES = [
     "n9",
     "na",
     "nb",
-]
+)
+
+ENRANGE_VALUES = (
+    "r0",
+    "r1",
+    "r2",
+)
 
 DETECTOR_MAP = {
     k: v for k, v in list(zip(DETECTOR_MAP_KEYS, DETECTOR_MAP_VALUES))

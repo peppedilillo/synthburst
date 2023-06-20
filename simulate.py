@@ -75,7 +75,7 @@ class TemplateBackground:
         :return: list, the ordered event list.
         """
         template = self.template
-        template = template.loc[(template.met >= tmin) & (template.met <= tmax), :]
+        template = template.loc[(template.time >= tmin) & (template.time <= tmax), :]
         # Define list TTE
         list_tte = np.array([])
         print("Begin bkg generation")
@@ -86,7 +86,7 @@ class TemplateBackground:
                 counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=self.id_t[2],
                                       scale_mean_rate=scale_mean_rate)
                 # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
-                time_tte = np.sort(np.random.uniform(template.loc[i, 'met'], template.loc[i, 'met'] +
+                time_tte = np.sort(np.random.uniform(template.loc[i, 'time'], template.loc[i, 'time'] +
                                                      self.bin_time, counts))
                 # equispaced event generation
                 # time_tte = np.arange(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, 1/counts)
@@ -94,7 +94,7 @@ class TemplateBackground:
             print(f"INFO: parameter 'size' wasn't used. Number of events generated: {len(list_tte)}")
         else:
             size = mean_rate * (tmax - tmin)
-            bins = template.loc[:, 'met'].values
+            bins = template.loc[:, 'time'].values
             probabilities = template.loc[:, 'counts'].values[:-1]
             list_tte = inversion_sampling(size, bins, probabilities)
 
@@ -160,7 +160,7 @@ class Lightcurve:
         return np.append(self.burst + toffset, self.background)
 
 
-def plot_lightcurve(data, bin_time=4):
+def plot_lightcurve(data, bin_time=.1):
     bins = np.arange(np.min(data), np.max(data), bin_time)
     counts, _ = np.histogram(data, bins=bins)
     plt.figure()
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     print("loading GRB model")
     x = Burst(model="120707800")
     print("generating burst events")
-    grb_data = x.generate_times(3200)
+    grb_data = x.generate_times(10000)
     print("plotting GRB")
     plot_lightcurve(grb_data)
 
