@@ -38,16 +38,16 @@ def _download_ttes(
     for td in DETECTOR_MAP.keys():
         if td not in grb_td:
             continue
-        n_td = DETECTOR_MAP[td]
+        ndet = DETECTOR_MAP[td]
         str_http_folder = _url(grb_id)
         response = requests.get(str_http_folder)
         if response.status_code == 404:
             raise TTEDownloadError()
         response_txt = (requests.get(str_http_folder)).text
         # works when version is greater than 0
-        idx_txt_version = response_txt.find(f"glg_tte_n{n_td}_bn{grb_id}_v")
+        idx_txt_version = response_txt.find(f"glg_tte_{ndet}_bn{grb_id}_v")
         tte_version = response_txt[idx_txt_version + 24 : idx_txt_version + 26]
-        str_tte_file = f"glg_tte_n{n_td}_bn{grb_id}_v{tte_version}.fit"
+        str_tte_file = f"glg_tte_{ndet}_bn{grb_id}_v{tte_version}.fit"
         str_ftp_http = str_http_folder + str_tte_file
         filepath = Path(folderpath).joinpath(str_tte_file)
         if filepath.is_file():
@@ -80,7 +80,7 @@ def fetch_datafiles(
     """
     detectors = triggered_detectors(grb_id)
     cached = [f for f in list(paths.ttes().iterdir()) if grb_id in f.name]
-    cached_detectors = [DETECTOR_MAP_INVERTED[f.name[9:10]] for f in cached]
+    cached_detectors = [DETECTOR_MAP_INVERTED[f.name[8:10]] for f in cached]
     missing_detectors = set(detectors) - set(cached_detectors)
     downloaded = _download_ttes(grb_id, missing_detectors)
     return cached + downloaded
