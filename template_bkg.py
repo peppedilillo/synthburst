@@ -7,29 +7,30 @@ from utils import DETECTOR_MAP_VALUES, ENRANGE_VALUES
 import logging
 
 
-def bkg_template_split(min_split: float = 96.5) -> Dict:
+def bkg_template_split(orbit_duration: float = 96.5 * 60) -> Dict:
     """
     Take a background day estimate and produce a template dictionary (4 dimensions: orbit, detector, energy range,
      values).
-    :param min_split: float, Minutes of the background split. By default, it is chosen the Fermi orbit (96.5 minutes).
+    :param orbit_duration: float, Seconds of the background split. By default, it is chosen the Fermi orbit (96.5 minutes).
     :return: Dict, a template which the first dimension is the number of templates,by default are 15 orbits. The next
-    dimension is the detector (e.g. n7). Then the range (e.g. r1). Finally, the last dimension can be 'met' that is
+    dimension is the detector (e.g. n7). Then the range (e.g. r1). Finally, the last dimension can be 'time' that is
     referring the time and 'counts' that is the count rates estimated (e.g. count rates for detector n7,
      in range r1 at the particular met time).
     """
-    bkg_pred = get_bkg_day()
-    orbit_duration = min_split * 60
     templates = {}
-    for norbit, tstart in enumerate(np.arange(0, bkg_pred.time.max() + orbit_duration, orbit_duration)):
+    bkg_pred = get_bkg_day()
+    orbits = np.arange(0, bkg_pred.time.max() + orbit_duration, orbit_duration)
+    for norbit, tstart in enumerate(orbits):
         templates[norbit] = {}
         for ndet in DETECTOR_MAP_VALUES:
             templates[norbit][ndet] = {}
             for enrange in ENRANGE_VALUES:
-                df_template_tmp = pd.DataFrame()
                 mask = (bkg_pred.time >= tstart) & (bkg_pred.time < tstart + orbit_duration)
-                df_template_tmp['counts'] = bkg_pred.loc[mask, ndet + '_' + enrange].copy()
-                df_template_tmp['time'] = bkg_pred.loc[mask, 'time'] - bkg_pred.loc[mask,'time'].min()
-                templates[norbit][ndet][enrange] = df_template_tmp
+                df = pd.DataFrame({
+                    'counts': bkg_pred.loc[mask, ndet + '_' + enrange],
+                    'time': bkg_pred.loc[mask, 'time'] - bkg_pred.loc[mask,'time'].min(),
+                })
+                templates[norbit][ndet][enrange] = df
     return templates
 
 
