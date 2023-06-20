@@ -63,6 +63,7 @@ class TemplateBackground:
         self.template = bkg_template_split()[id_t[0]][id_t[1]][id_t[2]].reset_index(drop=True)
         # Bin time of the template. Usually is 4.096.
         self.bin_time = 4.096
+
     @timer
     def generate_times(self, mean_rate, tmin, tmax, distribution='inversion_sampling'):
         """
