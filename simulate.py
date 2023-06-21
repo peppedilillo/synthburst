@@ -80,7 +80,7 @@ class TemplateBackground:
         list_tte = np.array([])
         print("Begin bkg generation")
         if distribution in ['normal', 'poisson']:
-            scale_mean_rate = mean_rate/template['counts'].mean()
+            scale_mean_rate = mean_rate/(template['counts'].mean()/self.bin_time)
             for i in template.index:
                 # From the estimated count draw a poisson random variable
                 counts = sample_count(template.loc[i, 'counts'], type_random=distribution, en_range=self.id_t[2],
@@ -88,8 +88,6 @@ class TemplateBackground:
                 # Generate the time arrival of the N photons. N = counts. The time arrival must be in the interval.
                 time_tte = np.sort(np.random.uniform(template.loc[i, 'time'], template.loc[i, 'time'] +
                                                      self.bin_time, counts))
-                # equispaced event generation
-                # time_tte = np.arange(template.loc[i, 'met'], template.loc[i, 'met'] + bin_time, 1/counts)
                 list_tte = np.append(list_tte, time_tte)
             print(f"INFO: parameter 'size' wasn't used. Number of events generated: {len(list_tte)}")
         else:
@@ -174,14 +172,14 @@ if __name__ == "__main__":
     tb = TemplateBackground(id_t=(3, 'n7', 'r1'))
     bkg_data = tb.generate_times(mean_rate=500, distribution='inversion_sampling', tmin=0, tmax=1500)
     print("plotting bkg")
-    plot_lightcurve(bkg_data)
+    plot_lightcurve(bkg_data, bin_time=1.)
 
     print("loading GRB model")
     x = Burst(model="120707800")
     print("generating burst events")
     grb_data = x.generate_times(10000)
     print("plotting GRB")
-    plot_lightcurve(grb_data)
+    plot_lightcurve(grb_data, bin_time=1.)
 
     print("Define lightcurve model")
     lc = Lightcurve()
@@ -189,6 +187,6 @@ if __name__ == "__main__":
     lc.add_background(bkg_data)
     lc_data = lc.generate_times(toffset=500)
     print("plotting lightcurve")
-    plot_lightcurve(lc_data)
+    plot_lightcurve(lc_data, bin_time=1.)
 
     pass
