@@ -46,8 +46,25 @@ def triggered_detectors(grb_id: str) -> List[str]:
     return output
 
 
+def get_bkg_day(bkgpath: Path = paths.day_bkg) -> pd.DataFrame:
+    """
+    Return the table background prediction in the day_bkg selected.
+    :param bkgpath: str, bakcground day path in which is stored the prediction of the background count rates
+     for each of the 12 detectors (n0, n1, n2, n3, n4, n5, n6, n7, n8, n9, na, nb) in three ranges
+      28-50 (r0), 50-300 (r1), 300-500 (r2). Met time in float and datetime in strings are provided.
+    :return: pd.DataFrame, the table of background count rates estimated.
+    """
+    bkg_pred = pd.read_csv(bkgpath)
+    bkg_pred['time'] = bkg_pred.met - bkg_pred.met.min()
+    return bkg_pred
+
+
 if __name__ == "__main__":
     print("Triggered detectors:")
     print(triggered_detectors("120707800"))
     print("Metadata from burst catalog:")
     print(get_metadata("120707800"))
+    print("Background estimate table head:")
+    print(get_bkg_day().head(5))
+
+
